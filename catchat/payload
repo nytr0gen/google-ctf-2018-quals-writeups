@@ -1,0 +1,12 @@
+GET / HTTP/1.1
+Host: google.com
+Host: cat-chat.web.ctfcompetition.com
+dnt: 1
+accept-encoding: gzip, deflate, br
+accept-language: en-US,en;q=0.9,ro;q=0.8
+user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.87 Safari/537.36
+accept: */*
+referer: https://cat-chat.web.ctfcompetition.com/room/67621814-eb3e-4f2a-a595-28cf9f955065/
+authority: cat-chat.web.ctfcompetition.com
+
+
